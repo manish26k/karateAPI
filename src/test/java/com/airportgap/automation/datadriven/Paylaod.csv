@@ -1,0 +1,4 @@
+﻿InputStatus,Email,Password,StatusCode,OutputFile
+Valid,ash26rana@gmail.com,F@ceb0ok,200,tokenResponse.json
+Invalid,ash26rana@gmail.com,F@ck,401,tokenInvalid.json
+Invalid,,,401,tokenEmpty.json

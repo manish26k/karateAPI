@@ -1,0 +1,23 @@
+[
+  {
+    "InputStatus": "Valid",
+    "Email": "ash26rana@gmail.com",
+    "Password": "F@ceb0ok",
+    "StatusCode": 200,
+    "OutputFile": "tokenResponse.json"
+  },
+  {
+    "InputStatus": "Invalid",
+    "Email": "ash26rana@gmail.com",
+    "Password": "F@ck",
+    "StatusCode": 401,
+    "OutputFile": "tokenInvalid.json"
+  },
+  {
+    "InputStatus": "Invalid",
+    "Email": "",
+    "Password": "",
+    "StatusCode": 401,
+    "OutputFile": "tokenEmpty.json"
+  }
+]

@@ -1,0 +1,80 @@
+name: Run Dev API Tests
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  run-dev-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+
+      - name: Run Karate Dev Tests
+        run: |
+          mvn test -Dkarate.options="classpath:com/airportgap/automation/postFavoriteRequest classpath:com/airportgap/automation/getFavorityById" -Dkarate.env=dev
+
+      - name: Upload Karate Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: karate-report-dev
+          path: target/karate-reports/
+
+      - name: Display Test Summary
+        run: |
+          echo "## Karate Test Summary (Dev)" >> $GITHUB_STEP_SUMMARY
+          if [ -f target/karate-reports/karate-summary-json.txt ]; then
+            TOTAL=$(jq '.features | length' target/karate-reports/karate-summary-json.txt)
+            PASSED=$(jq '[.features[] | select(.passed)] | length' target/karate-reports/karate-summary-json.txt)
+            FAILED=$(jq '[.features[] | select(.failed)] | length' target/karate-reports/karate-summary-json.txt)
+            echo "**Total Features:** $TOTAL" >> $GITHUB_STEP_SUMMARY
+            echo "**Passed:** $PASSED" >> $GITHUB_STEP_SUMMARY
+            echo "**Failed:** $FAILED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Summary file not found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Scenario-Level Breakdown
+        run: |
+          echo "## Scenario Breakdown" >> $GITHUB_STEP_SUMMARY
+          if [ -f target/karate-reports/karate-summary-json.txt ]; then
+            jq -r '
+              .features[] |
+              .name as $feature |
+              .elements[] |
+              "- **Feature:** \($feature)\n  - Scenario: \(.name)\n  - Status: \(.result)"' target/karate-reports/karate-summary-json.txt >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No scenario breakdown found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Send Email on Failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_PASSWORD }}
+          subject:  Karate Dev Tests Failed
+          body: |
+            Hi,
+
+            Some Karate Dev API tests have failed.
+            Repo: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref_name }}
+            Workflow Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Please check the test summary in the GitHub Actions UI.
+
+          to: yourrecipient@gmail.com
+          from: Karate GitHub Bot <${{ secrets.GMAIL_USERNAME }}>
+          secure: true
