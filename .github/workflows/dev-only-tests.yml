@@ -21,7 +21,7 @@ jobs:
 
       - name: Run Karate Dev Tests
         run: |
-          mvn test -Dtest=TokenWithMultiplePayloadsRunner" -Dkarate.env=dev
+          mvn test -Dtest=TokenWithMultiplePayloadsRunner -Dkarate.env=dev
 
       - name: Upload Karate Report
         uses: actions/upload-artifact@v4
