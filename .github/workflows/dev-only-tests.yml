@@ -23,7 +23,7 @@ jobs:
           mvn test -Dkarate.options="classpath:com/airportgap/automation/postFavoriteRequest classpath:com/airportgap/automation/getFavorityById" -Dkarate.env=dev
 
       - name: Upload Karate Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: karate-report-dev
           path: target/karate-reports/
