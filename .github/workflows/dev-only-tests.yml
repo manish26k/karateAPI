@@ -21,7 +21,7 @@ jobs:
 
       - name: Run Karate Dev Tests
         run: |
-          mvn test -Dkarate.options="classpath:com/airportgap/automation/postFavoriteRequest classpath:com/airportgap/automation/getFavorityById" -Dkarate.env=dev
+          mvn test -Dkarate.options="classpath:com/airportgap/automation/postRrquest02" -Dkarate.env=dev
 
       - name: Upload Karate Report
         uses: actions/upload-artifact@v4
