@@ -21,7 +21,7 @@ jobs:
 
       - name: Run Karate Dev Tests
         run: |
-          mvn test -Dtest=TokenWithMultiplePayloadsRunner -Dkarate.env=dev
+          mvn test -Dtest=TestGetRunner -Dkarate.env=dev
 
       - name: Upload Karate Report
         uses: actions/upload-artifact@v4
@@ -32,10 +32,10 @@ jobs:
       - name: Display Test Summary
         run: |
           echo "## Karate Test Summary (Dev)" >> $GITHUB_STEP_SUMMARY
-          if [ -f target/karate-reports/karate-summary-json.txt ]; then
-            TOTAL=$(jq '.features | length' target/karate-reports/karate-summary-json.txt)
-            PASSED=$(jq '[.features[] | select(.passed)] | length' target/karate-reports/karate-summary-json.txt)
-            FAILED=$(jq '[.features[] | select(.failed)] | length' target/karate-reports/karate-summary-json.txt)
+          if [ -f target/karate-reports/karate-summary-json]; then
+            TOTAL=$(jq '.features | length' target/karate-reports/karate-summary-json)
+            PASSED=$(jq '[.features[] | select(.passed)] | length' target/karate-reports/karate-summary-json)
+            FAILED=$(jq '[.features[] | select(.failed)] | length' target/karate-reports/karate-summary-json)
             echo "**Total Features:** $TOTAL" >> $GITHUB_STEP_SUMMARY
             echo "**Passed:** $PASSED" >> $GITHUB_STEP_SUMMARY
             echo "**Failed:** $FAILED" >> $GITHUB_STEP_SUMMARY
@@ -46,12 +46,12 @@ jobs:
       - name: Scenario-Level Breakdown
         run: |
           echo "## Scenario Breakdown" >> $GITHUB_STEP_SUMMARY
-          if [ -f target/karate-reports/karate-summary-json.txt ]; then
+          if [ -f target/karate-reports/karate-summary-json]; then
             jq -r '
               .features[] |
               .name as $feature |
               .elements[] |
-              "- **Feature:** \($feature)\n  - Scenario: \(.name)\n  - Status: \(.result)"' target/karate-reports/karate-summary-json.txt >> $GITHUB_STEP_SUMMARY
+              "- **Feature:** \($feature)\n  - Scenario: \(.name)\n  - Status: \(.result)"' target/karate-reports/karate-summary-json >> $GITHUB_STEP_SUMMARY
           else
             echo "No scenario breakdown found." >> $GITHUB_STEP_SUMMARY
           fi
@@ -63,7 +63,7 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 465
           username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_PASSWORD }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
           subject:  Karate Dev Tests Failed
           body: |
             Hi,
@@ -76,6 +76,6 @@ jobs:
 
             Please check the test summary in the GitHub Actions UI.
 
-          to: yourrecipient@gmail.com
+          to: ${{ secrets.EMAIL_TO }}
           from: Karate GitHub Bot <${{ secrets.GMAIL_USERNAME }}>
           secure: true
