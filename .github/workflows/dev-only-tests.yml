@@ -49,8 +49,6 @@ jobs:
           if [ -f target/karate-reports/karate-summary.json ]; then
              jq -r '
                 .featureSummary[] |
-                .name as $feature |
-                .elements[] |
                 "- **Feature:** \($feature)\n  - TotalScenario: \(.scenarioCount)\n  - Passed: \(.passedCount)\n -Failed: \(.failedCount)"' target/karate-reports/karate-summary.json >> $GITHUB_STEP_SUMMARY
           else
             echo "No scenario breakdown found." >> $GITHUB_STEP_SUMMARY
