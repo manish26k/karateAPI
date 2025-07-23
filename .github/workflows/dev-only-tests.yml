@@ -68,7 +68,7 @@ jobs:
           body: |
             Hi,
 
-            Karate Dev API tests have completed with status: **${{ job.status }}**
+            Karate Dev API tests have completed with status: ${{ job.status }}
 
             Repo: ${{ github.repository }}
             Commit: ${{ github.sha }}
