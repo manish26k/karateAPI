@@ -76,35 +76,16 @@ jobs:
             Branch: ${{ github.ref_name }}
             Workflow Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-             Please find the attached report (HTML) for details.
+            Please find the attached report (HTML) for details.
         to: ${{ secrets.EMAIL_TO }}
         from: ${{ secrets.GMAIL_USERNAME }}
         secure: true
         attachments: target/karate-reports/karate-summary.html
+    
+
+      
 
           
 
 
-      # - name: Send Email on Failure
-      #   if: failure()
-      #   uses: dawidd6/action-send-mail@v3
-      #   with:
-      #     server_address: smtp.gmail.com
-      #     server_port: 465
-      #     username: ${{ secrets.GMAIL_USERNAME }}
-      #     password: ${{ secrets.GMAIL_APP_PASSWORD }}
-      #     subject:  Karate Dev Tests Failed
-      #     body: |
-      #       Hi,
-
-      #       Some Karate Dev API tests have failed.
-      #       Repo: ${{ github.repository }}
-      #       Commit: ${{ github.sha }}
-      #       Branch: ${{ github.ref_name }}
-      #       Workflow Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-      #       Please check the test summary in the GitHub Actions UI.
-
-      #     to: ${{ secrets.EMAIL_TO }}
-      #     from: Karate GitHub Bot <${{ secrets.GMAIL_USERNAME }}>
-      #     secure: true
+      
