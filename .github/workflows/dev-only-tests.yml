@@ -77,10 +77,10 @@ jobs:
             Workflow Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
              Please find the attached report (HTML) for details.
-            to: ${{ secrets.EMAIL_TO }}
-            from: ${{ secrets.GMAIL_USERNAME }}
-            secure: true
-            attachments: target/karate-reports/karate-summary.html
+        to: ${{ secrets.EMAIL_TO }}
+        from: ${{ secrets.GMAIL_USERNAME }}
+        secure: true
+        attachments: target/karate-reports/karate-summary.html
 
           
 
