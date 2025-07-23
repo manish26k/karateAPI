@@ -43,7 +43,6 @@ jobs:
             echo "Summary file not found." >> $GITHUB_STEP_SUMMARY
           fi
 
-
       - name: Scenario-Level Breakdown
         run: |
           echo "## Scenario Breakdown" >> $GITHUB_STEP_SUMMARY
@@ -58,7 +57,7 @@ jobs:
           fi
 
       - name: Send Email with Report
-        if: always()  # send email on both pass and fail
+        if: always()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -77,15 +76,7 @@ jobs:
             Workflow Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
             Please find the attached report (HTML) for details.
-        to: ${{ secrets.EMAIL_TO }}
-        from: ${{ secrets.GMAIL_USERNAME }}
-        secure: true
-        attachments: target/karate-reports/karate-summary.html
-    
-
-      
-
-          
-
-
-      
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.GMAIL_USERNAME }}
+          secure: true
+          attachments: target/karate-reports/karate-summary.html
