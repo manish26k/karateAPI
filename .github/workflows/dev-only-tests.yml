@@ -34,8 +34,8 @@ jobs:
           echo "## Karate Test Summary (Dev)" >> $GITHUB_STEP_SUMMARY
           if [ -f target/karate-reports/karate-summary.json ]; then
              TOTAL=$(jq '.featureSummary | length' target/karate-reports/karate-summary.json)
-             PASSED=$(jq '[.featureSummary[] | select(.passed)] | length' target/karate-reports/karate-summary.json)
-             FAILED=$(jq '[.featureSummary[] | select(.failed)] | length' target/karate-reports/karate-summary.json)
+             PASSED=$(jq '[.featureSummary[] | select(.failedCount == 0)] | length' target/karate-reports/karate-summary.json)
+             FAILED=$(jq '[.featureSummary[] | select(.failedCount > 0)] | length' target/karate-reports/karate-summary.json)
              echo "**Total Features:** $TOTAL" >> $GITHUB_STEP_SUMMARY
              echo "**Passed:** $PASSED" >> $GITHUB_STEP_SUMMARY
              echo "**Failed:** $FAILED" >> $GITHUB_STEP_SUMMARY
@@ -52,7 +52,7 @@ jobs:
                 .featureSummary[] |
                 .name as $feature |
                 .elements[] |
-                "- **Feature:** \($feature)\n  - Scenario: \(.name)\n  - Status: \(.result)"' target/karate-reports/karate-summary.json >> $GITHUB_STEP_SUMMARY
+                "- **Feature:** \($feature)\n  - TotalScenario: \(.scenarioCount)\n  - Passed: \(.passedCount)\n -Failed: \(.failedCount)"' target/karate-reports/karate-summary.json >> $GITHUB_STEP_SUMMARY
           else
             echo "No scenario breakdown found." >> $GITHUB_STEP_SUMMARY
           fi
