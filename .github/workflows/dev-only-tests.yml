@@ -78,7 +78,7 @@ jobs:
 
              Please find the attached report (HTML) for details.
             to: ${{ secrets.EMAIL_TO }}
-            from: Karate GitHub Bot <${{ secrets.GMAIL_USERNAME }}>
+            from: ${{ secrets.GMAIL_USERNAME }}
             secure: true
             attachments: target/karate-reports/karate-summary.html
 
