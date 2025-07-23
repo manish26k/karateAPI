@@ -33,9 +33,9 @@ jobs:
         run: |
           echo "## Karate Test Summary (Dev)" >> $GITHUB_STEP_SUMMARY
           if [ -f target/karate-reports/karate-summary.json ]; then
-             TOTAL=$(jq '.features | length' target/karate-reports/karate-summary.json)
-             PASSED=$(jq '[.features[] | select(.passed)] | length' target/karate-reports/karate-summary.json)
-             FAILED=$(jq '[.features[] | select(.failed)] | length' target/karate-reports/karate-summary.json)
+             TOTAL=$(jq '.featureSummary | length' target/karate-reports/karate-summary.json)
+             PASSED=$(jq '[.featureSummary[] | select(.passed)] | length' target/karate-reports/karate-summary.json)
+             FAILED=$(jq '[.featureSummary[] | select(.failed)] | length' target/karate-reports/karate-summary.json)
              echo "**Total Features:** $TOTAL" >> $GITHUB_STEP_SUMMARY
              echo "**Passed:** $PASSED" >> $GITHUB_STEP_SUMMARY
              echo "**Failed:** $FAILED" >> $GITHUB_STEP_SUMMARY
@@ -49,7 +49,7 @@ jobs:
           echo "## Scenario Breakdown" >> $GITHUB_STEP_SUMMARY
           if [ -f target/karate-reports/karate-summary.json ]; then
              jq -r '
-                .features[] |
+                .featureSummary[] |
                 .name as $feature |
                 .elements[] |
                 "- **Feature:** \($feature)\n  - Scenario: \(.name)\n  - Status: \(.result)"' target/karate-reports/karate-summary.json >> $GITHUB_STEP_SUMMARY
@@ -57,27 +57,54 @@ jobs:
             echo "No scenario breakdown found." >> $GITHUB_STEP_SUMMARY
           fi
 
-
-      - name: Send Email on Failure
-        if: failure()
+      - name: Send Email with Report
+        if: always()  # send email on both pass and fail
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 465
           username: ${{ secrets.GMAIL_USERNAME }}
           password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          subject:  Karate Dev Tests Failed
+          subject: Karate Dev Tests - ${{ job.status }}
           body: |
             Hi,
 
-            Some Karate Dev API tests have failed.
+            Karate Dev API tests have completed with status: **${{ job.status }}**
+
             Repo: ${{ github.repository }}
             Commit: ${{ github.sha }}
             Branch: ${{ github.ref_name }}
             Workflow Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-            Please check the test summary in the GitHub Actions UI.
+             Please find the attached report (HTML) for details.
+            to: ${{ secrets.EMAIL_TO }}
+            from: Karate GitHub Bot <${{ secrets.GMAIL_USERNAME }}>
+            secure: true
+            attachments: target/karate-reports/karate-summary.html
 
-          to: ${{ secrets.EMAIL_TO }}
-          from: Karate GitHub Bot <${{ secrets.GMAIL_USERNAME }}>
-          secure: true
+          
+
+
+      # - name: Send Email on Failure
+      #   if: failure()
+      #   uses: dawidd6/action-send-mail@v3
+      #   with:
+      #     server_address: smtp.gmail.com
+      #     server_port: 465
+      #     username: ${{ secrets.GMAIL_USERNAME }}
+      #     password: ${{ secrets.GMAIL_APP_PASSWORD }}
+      #     subject:  Karate Dev Tests Failed
+      #     body: |
+      #       Hi,
+
+      #       Some Karate Dev API tests have failed.
+      #       Repo: ${{ github.repository }}
+      #       Commit: ${{ github.sha }}
+      #       Branch: ${{ github.ref_name }}
+      #       Workflow Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      #       Please check the test summary in the GitHub Actions UI.
+
+      #     to: ${{ secrets.EMAIL_TO }}
+      #     from: Karate GitHub Bot <${{ secrets.GMAIL_USERNAME }}>
+      #     secure: true
