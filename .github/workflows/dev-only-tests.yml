@@ -23,6 +23,17 @@ jobs:
         run: |
           mvn test -Dtest=TestGetRunner -Dkarate.env=dev
 
+      - name: Show Karate Summary in Console
+        run: |
+          echo "========== Karate Test Summary =========="
+          jq -r '
+            "Env: \(.env)\nTotal Time: \(.totalTime) ms\nScenarios Passed: \(.scenariosPassed)\nScenarios Failed: \(.scenariosfailed)\n",
+            "Features:" +
+            ( .featureSummary[] | 
+              "\n✔️ Feature: \(.name)\n  Passed: \(.passedCount)\n  Failed: \(.failedCount)\n  Scenarios: \(.scenarioCount)\n  Duration: \(.durationMillis) ms\n  Path: \(.relativePath)\n"
+            )
+          ' target/karate-reports/karate-summary.json    
+
       - name: Upload Karate Report
         uses: actions/upload-artifact@v4
         with:
@@ -32,33 +43,7 @@ jobs:
       - name: Debug Karate Report Files
         run: |
           echo "Listing karate-reports folder:"
-          ls -l target/karate-reports || echo "No report folder found"    
-
-      - name: Display Test Summary
-        run: |
-         echo "## Karate Test Summary (Dev)" >> $GITHUB_STEP_SUMMARY
-         if [ -f target/karate-reports/karate-summary-json ]; then
-            TOTAL=$(jq '.featureSummary | length' target/karate-reports/karate-summary-json)
-            PASSED=$(jq '[.featureSummary[] | select(.failedCount == 0)] | length' target/karate-reports/karate-summary-json)
-            FAILED=$(jq '[.featureSummary[] | select(.failedCount > 0)] | length' target/karate-reports/karate-summary-json)
-            echo "**Total Features:** $TOTAL" >> $GITHUB_STEP_SUMMARY
-            echo "**Passed Features:** $PASSED" >> $GITHUB_STEP_SUMMARY
-            echo "**Failed Features:** $FAILED" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "karate-summary-json file not found." >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Scenario-Level Breakdown
-        run: |
-         echo "## Scenario Breakdown" >> $GITHUB_STEP_SUMMARY
-         if [ -f target/karate-reports/karate-summary-json ]; then
-            jq -r '
-            .featureSummary[] |
-            "- **Feature:** \(.name)\n  - Total Scenarios: \(.scenarioCount)\n  - Passed: \(.passedCount)\n  - Failed: \(.failedCount)"' \
-            target/karate-reports/karate-summary.json >> $GITHUB_STEP_SUMMARY
-          else
-            echo "No scenario breakdown found." >> $GITHUB_STEP_SUMMARY
-          fi
+          ls -l target/karate-reports || echo "No report folder found"         
 
       - name: Send Email with Report
         if: always()
