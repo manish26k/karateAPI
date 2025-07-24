@@ -11,6 +11,7 @@ public class TestGetRunner {
         return Karate.run("getAirports")
                      .relativeTo(getClass())
                      .outputCucumberJson(true)
-                     .reportDir("target/karate-reports");
+                     .outputJunitXml(true)
+                     .reportDir("target/karate-summary-json.txt");
     }
 }
