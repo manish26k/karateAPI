@@ -29,24 +29,29 @@ jobs:
           name: karate-report-dev
           path: target/karate-reports/
 
+      - name: Debug Karate Report Files
+        run: |
+          echo "Listing karate-reports folder:"
+          ls -l target/karate-reports || echo "No report folder found"    
+
       - name: Display Test Summary
         run: |
          echo "## Karate Test Summary (Dev)" >> $GITHUB_STEP_SUMMARY
-         if [ -f target/karate-reports/karate-summary-json.txt ]; then
-            TOTAL=$(jq '.featureSummary | length' target/karate-reports/karate-summary-json.txt)
-            PASSED=$(jq '[.featureSummary[] | select(.failedCount == 0)] | length' target/karate-reports/karate-summary-json.txt)
-            FAILED=$(jq '[.featureSummary[] | select(.failedCount > 0)] | length' target/karate-reports/karate-summary-json.txt)
+         if [ -f target/karate-reports/karate-summary-json ]; then
+            TOTAL=$(jq '.featureSummary | length' target/karate-reports/karate-summary-json)
+            PASSED=$(jq '[.featureSummary[] | select(.failedCount == 0)] | length' target/karate-reports/karate-summary-json)
+            FAILED=$(jq '[.featureSummary[] | select(.failedCount > 0)] | length' target/karate-reports/karate-summary-json)
             echo "**Total Features:** $TOTAL" >> $GITHUB_STEP_SUMMARY
             echo "**Passed Features:** $PASSED" >> $GITHUB_STEP_SUMMARY
             echo "**Failed Features:** $FAILED" >> $GITHUB_STEP_SUMMARY
           else
-            echo "karate-summary-json.txt file not found." >> $GITHUB_STEP_SUMMARY
+            echo "karate-summary-json file not found." >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Scenario-Level Breakdown
         run: |
          echo "## Scenario Breakdown" >> $GITHUB_STEP_SUMMARY
-         if [ -f target/karate-reports/karate-summary-json.txt ]; then
+         if [ -f target/karate-reports/karate-summary-json ]; then
             jq -r '
             .featureSummary[] |
             "- **Feature:** \(.name)\n  - Total Scenarios: \(.scenarioCount)\n  - Passed: \(.passedCount)\n  - Failed: \(.failedCount)"' \
@@ -54,8 +59,6 @@ jobs:
           else
             echo "No scenario breakdown found." >> $GITHUB_STEP_SUMMARY
           fi
-
-
 
       - name: Send Email with Report
         if: always()
