@@ -11,7 +11,8 @@ public class TestGetRunner {
         System.setProperty("karate.output.dir", "target/karate-reports");
         return Karate.run("getAirports")
                      .relativeTo(getClass())
-                     .outputCucumberJson(true);
+                     .outputCucumberJson(true)
+                     .outputJunitXml(true);
                      
     }
 }
