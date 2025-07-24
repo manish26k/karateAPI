@@ -9,7 +9,8 @@ public class TestGetRunner {
     @Test
     public Karate runTest(){
         System.setProperty("karate.output.dir", "target/karate-reports");
-        return Karate.run("getAirports")
+        // return Karate.run("getAirports")
+        return Karate.run()
                      .relativeTo(getClass())
                      .outputCucumberJson(true)
                      .outputJunitXml(true);
