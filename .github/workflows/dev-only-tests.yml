@@ -32,30 +32,29 @@ jobs:
       - name: Display Test Summary
         run: |
          echo "## Karate Test Summary (Dev)" >> $GITHUB_STEP_SUMMARY
-         if [ -f target/karate-reports/karate-output.json ]; then
-            TOTAL=$(jq '[.[] | .uri] | length' target/karate-reports/karate-output.json)
-            PASSED=$(jq '[.[] | .elements[] | select(.steps[]?.result.status == "passed")] | length' target/karate-reports/karate-output.json)
-            FAILED=$(jq '[.[] | .elements[] | select(.steps[]?.result.status == "failed")] | length' target/karate-reports/karate-output.json)
+         if [ -f target/karate-reports/karate-summary.json ]; then
+            TOTAL=$(jq '.featureSummary | length' target/karate-reports/karate-summary.json)
+            PASSED=$(jq '[.featureSummary[] | select(.failedCount == 0)] | length' target/karate-reports/karate-summary.json)
+            FAILED=$(jq '[.featureSummary[] | select(.failedCount > 0)] | length' target/karate-reports/karate-summary.json)
             echo "**Total Features:** $TOTAL" >> $GITHUB_STEP_SUMMARY
-            echo "**Passed Scenarios:** $PASSED" >> $GITHUB_STEP_SUMMARY
-            echo "**Failed Scenarios:** $FAILED" >> $GITHUB_STEP_SUMMARY
+            echo "**Passed Features:** $PASSED" >> $GITHUB_STEP_SUMMARY
+            echo "**Failed Features:** $FAILED" >> $GITHUB_STEP_SUMMARY
           else
-            echo "karate-output.json file not found." >> $GITHUB_STEP_SUMMARY
+            echo "karate-summary.json file not found." >> $GITHUB_STEP_SUMMARY
           fi
-
 
       - name: Scenario-Level Breakdown
         run: |
-          echo "## Scenario Breakdown" >> $GITHUB_STEP_SUMMARY
-          if [ -f target/karate-reports/karate-output.json ]; then
-             jq -r '
-             .[] |
-             .uri as $feature |
-             .elements[] |
-             "- **Feature:** \($feature)\n  - Scenario: \(.name)\n  - Status: \(.steps[-1].result.status)"' target/karate-reports/karate-output.json >> $GITHUB_STEP_SUMMARY
+         echo "## Scenario Breakdown" >> $GITHUB_STEP_SUMMARY
+         if [ -f target/karate-reports/karate-summary.json ]; then
+            jq -r '
+            .featureSummary[] |
+            "- **Feature:** \(.name)\n  - Total Scenarios: \(.scenarioCount)\n  - Passed: \(.passedCount)\n  - Failed: \(.failedCount)"' \
+            target/karate-reports/karate-summary.json >> $GITHUB_STEP_SUMMARY
           else
             echo "No scenario breakdown found." >> $GITHUB_STEP_SUMMARY
           fi
+
 
 
       - name: Send Email with Report
