@@ -23,48 +23,25 @@ jobs:
         run: |
           mvn test -Dtest=TestGetRunner -Dkarate.env=dev
 
-      - name: Annotate Karate Scenarios in GitHub Log
+      - name: Debug Karate Report Files
         run: |
-          echo "Adding GitHub Annotations for Karate Scenarios"
-          if [ -f target/karate-reports/karate-summary.json ]; then
-            jq -r '
-              .featureSummary[] |
-              . as $f |
-              $f.relativePath as $path |
-              $f.name as $featureName |
-              $f.failedCount as $failedCount |
-              ($f.failedCount > 0
-                | if . then
-                    "::error file=\($path),title=Feature Failed::\($featureName) failed \($failedCount) scenario(s)"
-                  else
-                    "::notice file=\($path),title=Feature Passed::\($featureName) passed"
-                  end)
-            ' target/karate-reports/karate-summary.json
-          else
-            echo "::warning::karate-summary.json not found for annotations."
-          fi
-
-      - name: Publish Karate Summary to GitHub Summary Tab
-        run: |
-          echo "## 🧪 Karate Test Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          if [ -f target/karate-reports/karate-summary.json ]; then
-            jq -r '
-              "Environment: \(.env)\nTotal Time: \(.totalTime) ms\nScenarios Passed: \(.scenariosPassed)\nScenarios Failed: \(.scenariosfailed)\n\n### Features:\n" +
-              ( .featureSummary[] |
-                "- **\(.name)** (`\(.relativePath)`)\n  - ✅ Passed: \(.passedCount)\n  - ❌ Failed: \(.failedCount)\n  - ⏱ Duration: \(.durationMillis) ms\n"
-              )
-            ' target/karate-reports/karate-summary.json >> $GITHUB_STEP_SUMMARY
-          else
-            echo "⚠️ karate-summary.json not found." >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "Listing karate-reports folder:"
+          find target/karate-reports -type f
 
       - name: Upload Karate Report
         uses: actions/upload-artifact@v4
         with:
           name: karate-report-dev
           path: target/karate-reports/
+
+      - name: Report Karate Results with github-test-reporter
+        uses: ctrf-io/github-test-reporter@v1
+        with:
+          name: Karate Dev Tests
+          path: target/karate-reports/cucumber-json-report.json
+          reporter: karate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Send Email with Report
         if: always()
