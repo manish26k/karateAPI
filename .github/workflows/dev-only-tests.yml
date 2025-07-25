@@ -3,12 +3,12 @@ name: Run Dev API Tests
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 jobs:
   run-dev-tests:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -16,47 +16,39 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: temurin
+          java-version: 21
 
       - name: Run Karate Dev Tests
-        run: |
-          mvn test -Dtest=TestGetRunner -Dkarate.env=dev
+        run: mvn test -Dtest=TestGetRunner -Dkarate.env=dev
 
-      - name: Debug Karate Report Files
+      - name: Debug Report Files
         run: |
-          echo "Listing karate-reports folder:"
+          echo "Karate reports:"
           find target/karate-reports -type f
 
-      - name: Upload Karate Report
+      - name: Upload Karate HTML Report as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: karate-report-dev
           path: target/karate-reports/
 
-      # ✅ Install Karate CTRf Converter
-      - name: Install karate-ctrf converter
-        run: npm install -g @ctrf/karate-ctrf
-
-      # ✅ Convert Karate JSON Report to CTRf format
-      - name: Convert Karate Report to CTRf JSON
+      - name: Convert JUnit XML to CTRF JSON
         run: |
-          karate-ctrf convert \
-            --input target/karate-reports/cucumber-json-report.json \
-            --output target/karate-reports/karate-ctrf.json
+          npm install -g ctrf-io/junit-to-ctrf
+          npx junit-to-ctrf "target/karate-reports/TEST-*.xml" -o target/karate-reports/karate-ctrf.json
 
-      # ✅ Publish GitHub Annotations + Summary using github-test-reporter
-      - name: Report Karate Results with github-test-reporter
+      - name: Report Test Results with github-test-reporter
         uses: ctrf-io/github-test-reporter@v1
         with:
           report-path: target/karate-reports/karate-ctrf.json
           summary-report: true
           annotate: true
+          pull-request: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ✅ Send email with the Karate summary
-      - name: Send Email with Report
+      - name: Send Email with Summary HTML
         if: always()
         uses: dawidd6/action-send-mail@v3
         with:
@@ -68,14 +60,12 @@ jobs:
           body: |
             Hi,
 
-            Karate Dev API tests have completed with status: ${{ job.status }}
+            Karate Dev API tests completed with status: ${{ job.status }}
 
             Repo: ${{ github.repository }}
             Commit: ${{ github.sha }}
             Branch: ${{ github.ref_name }}
             Workflow Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-            Please find the attached report (HTML) for details.
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.GMAIL_USERNAME }}
           secure: true
