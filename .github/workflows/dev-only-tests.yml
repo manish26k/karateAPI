@@ -20,7 +20,7 @@ jobs:
           java-version: 21
 
       - name: Run Karate Dev Tests
-        run: mvn test -Dtest=TestGetRunner -Dkarate.env=dev
+        run: mvn test -Dtest=ParallelTestRunner -Dkarate.env=dev
 
       - name: Debug Report Files
         run: |
