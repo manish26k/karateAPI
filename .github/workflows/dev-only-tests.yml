@@ -36,15 +36,22 @@ jobs:
       - name: Convert JUnit XML to CTRF JSON
         run: |
           npm install -g ctrf-io/junit-to-ctrf
-          npx junit-to-ctrf "target/karate-reports/TEST-*.xml" -o target/karate-reports/karate-ctrf.json
+          npx junit-to-ctrf "target/**/*.xml" -o target/karate-reports/karate-ctrf.json
 
       - name: Report Test Results with github-test-reporter
         uses: ctrf-io/github-test-reporter@v1
         with:
           report-path: target/karate-reports/karate-ctrf.json
           summary-report: true
+          github-report: true
+          test-report: true
+          fail-rate-report: true
+          failed-report: true
+          skipped-report: true
+          slowest-report: true
           annotate: true
           pull-request: true
+          summary: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
