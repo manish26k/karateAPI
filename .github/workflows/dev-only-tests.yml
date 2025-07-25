@@ -34,15 +34,28 @@ jobs:
           name: karate-report-dev
           path: target/karate-reports/
 
+      # ✅ Install Karate CTRf Converter
+      - name: Install karate-ctrf converter
+        run: npm install -g @ctrf/karate-ctrf
+
+      # ✅ Convert Karate JSON Report to CTRf format
+      - name: Convert Karate Report to CTRf JSON
+        run: |
+          karate-ctrf convert \
+            --input target/karate-reports/cucumber-json-report.json \
+            --output target/karate-reports/karate-ctrf.json
+
+      # ✅ Publish GitHub Annotations + Summary using github-test-reporter
       - name: Report Karate Results with github-test-reporter
         uses: ctrf-io/github-test-reporter@v1
         with:
-          name: Karate Dev Tests
-          path: target/karate-reports/cucumber-json-report.json
-          reporter: karate
+          report-path: target/karate-reports/karate-ctrf.json
+          summary-report: true
+          annotate: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # ✅ Send email with the Karate summary
       - name: Send Email with Report
         if: always()
         uses: dawidd6/action-send-mail@v3
